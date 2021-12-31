@@ -1,0 +1,14 @@
+[package]
+name = "ray-tracing-in-one-weekend-with-rust"
+version = "0.1.0"
+authors = ["Junichiro Kasuya <junichiro.kasuya@gmail.com>"]
+
+[dependencies]
+# sdl2 = "0.30"
+# bytes = "0.4"
+# timer = "0.2.0"
+# chrono = "0.4.0"
+# bmp = "*"
+# log = "0.3"
+# env_logger = "*"
+# bitflags = "*"
