@@ -134,10 +134,22 @@ impl Ray {
         return origin + self.direction * t;
     }
 
-    pub fn color(self) -> Color {
+    pub fn color(&self) -> Color {
+        if self.hit_sphere(Point3::new(0.0, 0.0, -1.0), 0.5) {
+            return Color::new(1.0, 0.0, 0.0);
+        }
         let unit_direction = self.direction.unit_vector();
         let t = unit_direction.y() + 1.0f64;
         return Color::new(1.0, 1.0, 1.0) * (1.0f64 - t)  + Color::new(0.5*1.0, 0.7*1.0, 1.0*1.0) * t;
+    }
+
+    fn hit_sphere(&self, center: Point3, radius: f64) -> bool {
+        let oc = self.origin - center;
+        let a = self.direction.dot(self.direction);
+        let b = 2.0 * oc.dot(self.direction);
+        let c = oc.dot(oc) - radius * radius;
+        let discriminant = b * b - 4.0 * a * c;
+        return discriminant > 0.0;
     }
 }
 
