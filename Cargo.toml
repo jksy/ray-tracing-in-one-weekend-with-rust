@@ -1,5 +1,5 @@
 [package]
-name = "ray-tracing-in-one-weekend-with-rust"
+name = "raytrace"
 version = "0.1.0"
 authors = ["Junichiro Kasuya <junichiro.kasuya@gmail.com>"]
 
