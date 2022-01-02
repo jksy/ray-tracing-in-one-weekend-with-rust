@@ -3,7 +3,7 @@ use std::cmp;
 use rand::Rng;
 
 
-pub fn random(min: f64, max: f64) -> f64 {
+pub fn random2(min: f64, max: f64) -> f64 {
     let mut _random = rand::thread_rng();
     min + (max - min) * _random.gen::<f64>()
 }
@@ -33,16 +33,16 @@ impl Vec3 {
         }
     }
 
-    pub fn random(min: f64,  max: f64) -> Self {
+    pub fn random2(min: f64,  max: f64) -> Self {
         let mut rng = rand::thread_rng();
         Vec3{
-            e: [random(min, max), random(min,max), random(min,max)]
+            e: [random2(min, max), random2(min,max), random2(min,max)]
         }
     }
 
     pub fn random_in_unit_shpere() -> Self {
         loop {
-            let vec = Vec3::random(-1.0, 1.0);
+            let vec = Vec3::random2(-1.0, 1.0);
             if vec.length_squared() < 1.0 {
                 return vec
             }
@@ -121,7 +121,7 @@ impl ops::Div for Vec3 {
     type Output = Vec3;
 
     fn div(self, r: Self) -> Vec3 {
-        return Vec3::new(self.e[0] / r.e[2], self.e[1] / r.e[1], self.e[2] / r.e[2]);
+        return Vec3::new(self.e[0] / r.e[0], self.e[1] / r.e[1], self.e[2] / r.e[2]);
     }
 }
 
@@ -129,7 +129,7 @@ impl ops::Div<f64> for Vec3 {
     type Output = Vec3;
 
     fn div(self, r: f64) -> Vec3 {
-        return self * (1.0f64 / r);
+        return self * (1.0 / r);
     }
 }
 
@@ -186,12 +186,21 @@ impl Ray {
 
         let (hit, record) = world.hit(self, 0.0, f64::INFINITY);
         if hit {
-            let target = record.p + record.normal + Point3::random_in_unit_shpere();
-             return Ray::new(record.p, target - record.p).color(world, depth - 1) * 0.5;
+            let target = record.p + self.random_in_hemisphere(record.normal);
+            return Ray::new(record.p, target - record.p).color(world, depth - 1) * 0.5;
         }
         let unit_direction = self.direction.unit_vector();
         let t = (unit_direction.y() + 1.0) * 0.5;
         return Color::new(1.0, 1.0, 1.0) * (1.0 - t)  + Color::new(0.5, 0.7, 1.0) * t;
+    }
+
+    fn random_in_hemisphere(&self, normal: Vec3) -> Vec3 {
+        let in_unit_sphere = Vec3::random_in_unit_shpere();
+        if in_unit_sphere.dot(normal) > 0.0 {
+            return in_unit_sphere;
+        } else  {
+            return Vec3::origin() - in_unit_sphere;
+        }
     }
 
     fn hit_sphere(&self, center: Point3, radius: f64) -> f64 {
@@ -221,9 +230,9 @@ impl Color {
         b = (b * scale).sqrt();
 
         return format!("{:?} {:?} {:?}",
-            (clamp(r * 255.999, 0.0, 255.0)) as u8,
-            (clamp(g * 255.999, 0.0, 255.0)) as u8,
-            (clamp(b * 255.999, 0.0, 255.0)) as u8);
+            (clamp(r, 0.0, 0.999) * 256.0) as u8,
+            (clamp(g, 0.0, 0.999) * 256.0) as u8,
+            (clamp(b, 0.0, 0.999) * 256.0) as u8);
     }
 }
 
