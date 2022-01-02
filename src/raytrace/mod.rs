@@ -30,7 +30,6 @@ impl Vec3 {
         self.e[2]
     }
 
-
     pub fn length(&self) -> f64 {
         self.length_squared().sqrt()
     }
@@ -134,16 +133,14 @@ impl Ray {
         return origin + self.direction * t;
     }
 
-    pub fn color(&self) -> Color {
-        let t =  self.hit_sphere(Point3::new(0.0, 0.0, -1.0), 0.5);
-        if t > 0.0 {
-            let at = self.at(t);
-            let n = at - Vec3::new(0.0, 0.0, -1.0);
-            return Color::new(n.x() + 1.0, n.y() + 1.0, n.z() + 1.0) * 0.5;
+    pub fn color(&self, world: &HitableList) -> Color {
+        let (hit, record) = world.hit(self, 0.0, f64::INFINITY);
+        if hit {
+            return (record.normal + Color::new(1.0, 1.0, 1.0)) * 0.5
         }
         let unit_direction = self.direction.unit_vector();
-        let t = unit_direction.y() + 1.0;
-        return Color::new(1.0, 1.0, 1.0) * (1.0 - t)  + Color::new(0.5*1.0, 0.7*1.0, 1.0*1.0) * t;
+        let t = (unit_direction.y() + 1.0) * 0.5;
+        return Color::new(1.0, 1.0, 1.0) * (1.0 - t)  + Color::new(0.5, 0.7, 1.0) * t;
     }
 
     fn hit_sphere(&self, center: Point3, radius: f64) -> f64 {
@@ -168,3 +165,107 @@ impl Color {
             (self.e[2] * 255.999) as u8);
     }
 }
+
+pub struct HitRecord {
+    p: Point3,
+    normal: Vec3,
+    t: f64,
+    front_face: bool,
+}
+
+impl HitRecord {
+    pub fn new() -> HitRecord {
+        HitRecord{
+            p: Point3::origin(),
+            normal: Vec3::origin(),
+            t: 0.0,
+            front_face: false,
+        }
+    }
+
+    fn set_front_face(&mut self, r: &Ray, outward_normal: &Vec3) {
+        self.front_face = r.direction.dot(*outward_normal) < 0.0;
+        if self.front_face {
+            self.normal = *outward_normal
+        } else {
+            self.normal = Vec3::origin() - (*outward_normal)
+        }
+    }
+}
+
+trait Hitable {
+    fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> (bool, HitRecord);
+}
+
+#[derive(Clone, Copy)]
+pub struct Sphere {
+    center: Point3,
+    radius: f64,
+}
+
+impl Hitable for Sphere  {
+    fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> (bool, HitRecord) {
+        let mut rec = HitRecord::new();
+        let oc = r.origin - self.center;
+        let a = r.direction.length_squared();
+        let half_b = oc.dot(r.direction);
+        let c = oc.length_squared() - self.radius * self.radius;
+
+        let discriminant = half_b * half_b - a * c;
+        if discriminant < 0.0 {
+            return (false, rec);
+        }
+        let sqrtd = discriminant.sqrt();
+
+        // Find the nearest root that lies in the acceptable range.
+        let mut root = -(half_b - sqrtd) / a;
+        if root < t_min || t_max < root {
+            root = (-half_b + sqrtd) / a;
+            if root < t_min || t_max < root {
+                return (false, rec);
+            }
+        }
+        rec.t = root;
+        rec.p = r.at(rec.t);
+        rec.normal = (rec.p - self.center) / self.radius;
+        return (true, rec);
+    }
+}
+
+impl Sphere {
+    pub fn new(center: Point3, radius:  f64) -> Sphere {
+        Sphere {
+            center: center,
+            radius: radius,
+        }
+    }
+}
+
+
+pub struct HitableList {
+    objects: Vec<Sphere>,
+}
+
+impl HitableList {
+    pub fn new() -> HitableList {
+        HitableList{
+            objects: Vec::new()
+        }
+    }
+
+    pub fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> (bool, HitRecord) {
+        for object in self.objects.iter() {
+            let (hit, record) = object.hit(r, t_min, t_max);
+            if hit {
+                return (hit, record)
+            }
+        }
+
+        return (false, HitRecord::new())
+    }
+
+    pub fn add(&mut self, object: &Sphere) {
+        self.objects.push(*object)
+    }
+}
+

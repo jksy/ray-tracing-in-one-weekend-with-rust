@@ -13,6 +13,11 @@ fn main() {
     let image_width = 800;
     let image_height = (image_width as f64 / aspect_ratio) as u32;
 
+    // World
+    let mut world = HitableList::new();
+    world.add(&Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5));
+    world.add(&Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0));
+
     // Camera
     let viewport_height = 2.0;
     let viewport_width = aspect_ratio * viewport_height;
@@ -31,12 +36,9 @@ fn main() {
             let origin = Point3::origin();
             let u = (w as f64) / image_width as f64;
             let v = (h as f64) / image_height as f64;
-            // write!(out, "{:?}\n", u).unwrap();
-            let ray = Ray::new(origin, lower_left_corner + horizontal * u + vertical * v - origin);
-            // write!(out, "{:?}\n", ray).unwrap();
+            let ray = Ray::new(origin, lower_left_corner + horizontal * u + vertical * v);
 
-            let color = ray.color();
-            // write!(out, "{:?}\n", color).unwrap();
+            let color = ray.color(&world);
             write!(out, "{}\n", color.to_string()).unwrap();
         }
     }
