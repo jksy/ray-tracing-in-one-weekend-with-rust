@@ -280,15 +280,15 @@ impl Hitable for Sphere  {
         let a = r.direction.length_squared();
         let half_b = oc.dot(r.direction);
         let c = oc.length_squared() - self.radius * self.radius;
-
         let discriminant = half_b * half_b - a * c;
+
         if discriminant < 0.0 {
             return (false, rec);
         }
         let sqrtd = discriminant.sqrt();
 
         // Find the nearest root that lies in the acceptable range.
-        let mut root = -(half_b - sqrtd) / a;
+        let mut root = (-half_b - sqrtd) / a;
         if root < t_min || t_max < root {
             root = (-half_b + sqrtd) / a;
             if root < t_min || t_max < root {
@@ -324,14 +324,20 @@ impl HitableList {
     }
 
     pub fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> (bool, HitRecord) {
+        let mut record = HitRecord::new();
+        let mut hit_anything = false;
+        let mut closest_so_far = t_max;
+
         for object in self.objects.iter() {
-            let (hit, record) = object.hit(r, t_min, t_max);
+            let (hit, tmp_record) = object.hit(r, t_min, closest_so_far);
             if hit {
-                return (hit, record)
+                hit_anything = true;
+                closest_so_far = tmp_record.t;
+                record = tmp_record;
             }
         }
 
-        return (false, HitRecord::new())
+        return (hit_anything, record);
     }
 
     pub fn add(&mut self, object: &Sphere) {
