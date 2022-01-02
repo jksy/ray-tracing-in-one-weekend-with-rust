@@ -184,7 +184,7 @@ impl Ray {
             return Color::black()
         }
 
-        let (hit, record) = world.hit(self, 0.0, f64::INFINITY);
+        let (hit, record) = world.hit(self, 0.001, f64::INFINITY);
         if hit {
             let target = record.p + self.random_in_hemisphere(record.normal);
             return Ray::new(record.p, target - record.p).color(world, depth - 1) * 0.5;
