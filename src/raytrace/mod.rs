@@ -8,7 +8,7 @@ pub struct Vec3 {
 impl Vec3 {
     pub fn origin() -> Self {
         Vec3{
-            e: [0f64, 0f64, 0f64]
+            e: [0.0, 0.0, 0.0]
         }
     }
 
@@ -113,6 +113,14 @@ impl ops::Mul<f64> for Vec3 {
 
 pub type Point3 = Vec3;
 pub type Color = Vec3;
+
+impl Color {
+    pub fn black() -> Self {
+        Color {
+            e: [0.0, 0.0, 0.0]
+        }
+    }
+}
 
 #[derive(Debug)]
 pub struct Ray {

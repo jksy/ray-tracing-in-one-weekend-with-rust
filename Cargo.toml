@@ -1,14 +1,9 @@
 [package]
 name = "raytrace"
 version = "0.1.0"
-authors = ["Junichiro Kasuya <junichiro.kasuya@gmail.com>"]
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-# sdl2 = "0.30"
-# bytes = "0.4"
-# timer = "0.2.0"
-# chrono = "0.4.0"
-# bmp = "*"
-# log = "0.3"
-# env_logger = "*"
-# bitflags = "*"
+rand = "0.8.4"
