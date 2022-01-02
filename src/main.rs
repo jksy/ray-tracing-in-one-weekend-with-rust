@@ -11,9 +11,11 @@ fn main() {
 
     // Image
     let aspect_ratio = 16.0 / 9.0;
-    let image_width = 800;
+    let image_width = 400;
     let image_height = (image_width as f64 / aspect_ratio) as u32;
-    let sample_per_pixel = 1;
+    let sample_per_pixel = 10;
+    // let sample_per_pixel = 10;
+    let max_depth = 50;
 
     // World
     let mut world = HitableList::new();
@@ -22,7 +24,6 @@ fn main() {
 
     // Camera
     let camera = Camera::new();
-    let mut rng = rand::thread_rng();
 
     // Render
     write!(out, "P3\n{:?} {:?}\n255\n", image_width, image_height).unwrap();
@@ -33,14 +34,13 @@ fn main() {
             let origin = Point3::origin();
 
             for i in 0..sample_per_pixel {
-                let u = (w as f64 + rng.gen::<f64>()) / image_width as f64;
-                let v = (h as f64 + rng.gen::<f64>()) / image_height as f64;
+                let u = (w as f64 + raytrace::random0()) / image_width as f64;
+                let v = (h as f64 + raytrace::random0()) / image_height as f64;
                 let ray = camera.get_ray(u, v);
 
-                color = color + ray.color(&world);
+                color = color + ray.color(&world, max_depth);
             }
-            color = color / sample_per_pixel as f64;
-            write!(out, "{}\n", color.to_string()).unwrap();
+            write!(out, "{}\n", color.to_string(sample_per_pixel)).unwrap();
         }
     }
 }

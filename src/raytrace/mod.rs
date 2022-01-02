@@ -1,4 +1,19 @@
 use std::ops;
+use std::cmp;
+use rand::Rng;
+
+
+pub fn random(min: f64, max: f64) -> f64 {
+    let mut _random = rand::thread_rng();
+    min + (max - min) * _random.gen::<f64>()
+}
+pub fn random0() -> f64 {
+    let mut _random = rand::thread_rng();
+    _random.gen::<f64>()
+}
+pub fn clamp(value: f64, min: f64, max: f64) -> f64 {
+    value.max(min).min(max)
+}
 
 #[derive(Clone,Copy,Debug)]
 pub struct Vec3 {
@@ -9,6 +24,29 @@ impl Vec3 {
     pub fn origin() -> Self {
         Vec3{
             e: [0.0, 0.0, 0.0]
+        }
+    }
+
+    pub fn random0() -> Self {
+        Vec3{
+            e: [random0(), random0(), random0()]
+        }
+    }
+
+    pub fn random(min: f64,  max: f64) -> Self {
+        let mut rng = rand::thread_rng();
+        Vec3{
+            e: [random(min, max), random(min,max), random(min,max)]
+        }
+    }
+
+    pub fn random_in_unit_shpere() -> Self {
+        loop {
+            let vec = Vec3::random(-1.0, 1.0);
+            if vec.length_squared() < 1.0 {
+                return vec
+            }
+
         }
     }
 
@@ -141,10 +179,15 @@ impl Ray {
         return origin + self.direction * t;
     }
 
-    pub fn color(&self, world: &HitableList) -> Color {
+    pub fn color(&self, world: &HitableList, depth: i32) -> Color {
+        if depth <= 0 {
+            return Color::black()
+        }
+
         let (hit, record) = world.hit(self, 0.0, f64::INFINITY);
         if hit {
-            return (record.normal + Color::new(1.0, 1.0, 1.0)) * 0.5
+            let target = record.p + record.normal + Point3::random_in_unit_shpere();
+             return Ray::new(record.p, target - record.p).color(world, depth - 1) * 0.5;
         }
         let unit_direction = self.direction.unit_vector();
         let t = (unit_direction.y() + 1.0) * 0.5;
@@ -166,11 +209,21 @@ impl Ray {
 }
 
 impl Color {
-    pub fn to_string(&self) -> String {
+    pub fn to_string(&self, sample_per_pixel: i32) -> String {
+        let mut r = self.x();
+        let mut g = self.y();
+        let mut b = self.z();
+
+        // Divide the color by the number of samples and gamma-correct for gamma=2.0.
+        let scale = 1.0 / sample_per_pixel as f64;
+        r = (r * scale).sqrt();
+        g = (g * scale).sqrt();
+        b = (b * scale).sqrt();
+
         return format!("{:?} {:?} {:?}",
-            (self.e[0] * 255.999) as u8,
-            (self.e[1] * 255.999) as u8,
-            (self.e[2] * 255.999) as u8);
+            (clamp(r * 255.999, 0.0, 255.0)) as u8,
+            (clamp(g * 255.999, 0.0, 255.0)) as u8,
+            (clamp(b * 255.999, 0.0, 255.0)) as u8);
     }
 }
 
