@@ -19,14 +19,7 @@ fn main() {
     world.add(&Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0));
 
     // Camera
-    let viewport_height = 2.0;
-    let viewport_width = aspect_ratio * viewport_height;
-    let focal_length = 1.0;
-
-    let origin = Point3::origin();
-    let horizontal = Vec3::new(viewport_width, 0f64, 0f64);
-    let vertical = Vec3::new(0f64, viewport_height, 0f64);
-    let lower_left_corner = origin - horizontal / 2f64 - vertical / 2f64 - Vec3::new(0f64, 0f64, focal_length);
+    let camera = Camera::new();
 
     // Render
     write!(out, "P3\n{:?} {:?}\n255\n", image_width, image_height).unwrap();
@@ -36,7 +29,7 @@ fn main() {
             let origin = Point3::origin();
             let u = (w as f64) / image_width as f64;
             let v = (h as f64) / image_height as f64;
-            let ray = Ray::new(origin, lower_left_corner + horizontal * u + vertical * v);
+            let ray = camera.get_ray(u, v);
 
             let color = ray.color(&world);
             write!(out, "{}\n", color.to_string()).unwrap();
