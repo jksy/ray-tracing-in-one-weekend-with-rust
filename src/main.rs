@@ -11,7 +11,7 @@ fn main() {
 
     // Image
     let aspect_ratio = 16.0 / 9.0;
-    let image_width = 200;
+    let image_width = 800;
     let image_height = (image_width as f64 / aspect_ratio) as u32;
     // let sample_per_pixel = 100;
     let sample_per_pixel = 100;
@@ -19,8 +19,16 @@ fn main() {
 
     // World
     let mut world = HitableList::new();
-    world.add(&Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5));
-    world.add(&Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0));
+
+    let material_ground = Material::Lambertian(Lambertian::new(Color::new(0.8, 0.8, 0.0)));
+    let material_center = Material::Lambertian(Lambertian::new(Color::new(0.7, 0.3, 0.3)));
+    let material_left = Material::Metal(Metal::new(Color::new(0.8, 0.8, 0.8)));
+    let material_right = Material::Metal(Metal::new(Color::new(0.8, 0.6, 0.2)));
+
+    world.add(&Sphere::new(Point3::new( 0.0, -100.5, -1.0), 100.0, material_ground));
+    world.add(&Sphere::new(Point3::new( 0.0,    0.0, -1.0), 0.5, material_center));
+    world.add(&Sphere::new(Point3::new(-1.0,    0.0, -1.0), 0.5, material_left));
+    world.add(&Sphere::new(Point3::new( 1.0,    0.0, -1.0), 0.5, material_right));
 
     // Camera
     let camera = Camera::new();
